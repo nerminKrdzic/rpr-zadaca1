@@ -8,7 +8,6 @@ public class Queen extends ChessPiece {
 
     @Override
     public void move(String position) throws IllegalArgumentException, IllegalChessMoveException {
-        if(super.position.equals(position)) return;
         if(!CheckPositionFormat.checkPositionFormat(position)) throw new IllegalArgumentException("");
         String oldPosition = getPosition();
         /* Ovdje gledamo ako se kraljica ne pomijera po visini ili sirini i
