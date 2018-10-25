@@ -41,28 +41,28 @@ class QueenTest {
         );
     }
     @Test
-    void moveDiagonaly1() {
+    void moveDiagonally1() {
         Queen queen = new Queen("C2", ChessPiece.Color.WHITE);
         assertDoesNotThrow(
                 () -> queen.move("F5")
         );
     }
     @Test
-    void moveDiagonaly2() {
+    void moveDiagonally2() {
         Queen queen = new Queen("F3", ChessPiece.Color.WHITE);
         assertDoesNotThrow(
                 () -> queen.move("C6")
         );
     }
     @Test
-    void moveDiagonaly3() {
+    void moveDiagonally3() {
         Queen queen = new Queen("C4", ChessPiece.Color.WHITE);
         assertDoesNotThrow(
                 () -> queen.move("E2")
         );
     }
     @Test
-    void moveDiagonaly4() {
+    void moveDiagonally4() {
         Queen queen = new Queen("D3", ChessPiece.Color.WHITE);
         assertDoesNotThrow(
                 () -> queen.move("B1")
