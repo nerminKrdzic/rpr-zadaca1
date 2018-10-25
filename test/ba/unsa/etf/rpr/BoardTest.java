@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BoardTest {
+/*class BoardTest {
 
     @Test
     // Is the board usable after isCheck
@@ -188,4 +188,4 @@ class BoardTest {
                 }
         );
     }
-}
+}*/

@@ -1,5 +1,7 @@
 package ba.unsa.etf.rpr;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class KingTest {
@@ -76,6 +78,21 @@ class KingTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> k.move("")
+        );
+    }
+    @org.junit.jupiter.api.Test
+    void moveIllegal4() {
+        King k = new King("C1", ChessPiece.Color.BLACK);
+        assertThrows(
+                IllegalChessMoveException.class,
+                () -> k.move("A1")
+        );
+    }
+    @Test
+    void move(){
+        King king = new King("C2", ChessPiece.Color.WHITE);
+        assertDoesNotThrow(
+                () -> king.move("C2")
         );
     }
 }

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class KnightTest {
+/*class KnightTest {
 
     @Test
     void move() {
@@ -14,4 +14,4 @@ class KnightTest {
         );
 
     }
-}
+}*/
