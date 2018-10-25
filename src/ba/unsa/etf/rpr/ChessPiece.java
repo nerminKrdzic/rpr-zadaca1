@@ -5,5 +5,5 @@ public abstract class ChessPiece {
     //methods realized in child classes
     public abstract String getPosition();
     public abstract Color getColor();
-    public abstract void move(String position);
+    public abstract void move(String position) throws IllegalArgumentException, IllegalChessMoveException;
 }
