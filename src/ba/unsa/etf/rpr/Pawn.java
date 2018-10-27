@@ -9,16 +9,24 @@ public class Pawn extends ChessPiece{
     private boolean whitePawnMove(String position){
         //provajera validnosti za white
         String oldPosition = getPosition();
+        // pomijeranje naprijed
         if(Math.abs((int)(oldPosition.charAt(0) - position.charAt(0))) == 0
                 && ((int)(position.charAt(1) - oldPosition.charAt(1)) == 1 || (int)(position.charAt(1) - oldPosition.charAt(1)) == 2))
+            return true;
+        //pomijeranje u koso
+        if(Math.abs((int)(oldPosition.charAt(0) - position.charAt(0))) == 1 && position.charAt(1) - oldPosition.charAt(1) == 1)
             return true;
         else return false;
     }
     private boolean blackPawnMove(String position){
         //provjera validnosti za black
         String oldPosition = getPosition();
+        //pomijeranje naprijed
         if(Math.abs((int)(oldPosition.charAt(0) - position.charAt(0))) == 0
                 && ((int)(oldPosition.charAt(1) - position.charAt(1)) == 1 || (int)(oldPosition.charAt(1) - position.charAt(1)) == 2))
+            return true;
+        //pomijeranje u koso
+        if(Math.abs((int)(oldPosition.charAt(0) - position.charAt(0))) == 1 && oldPosition.charAt(1) - position.charAt(1) == 1)
             return true;
         else return false;
     }
