@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/*class BoardTest {
+class BoardTest {
 
-    @Test
+    /*@Test
     // Is the board usable after isCheck
     void someLegalMoves() {
         Board b = new Board();
@@ -187,5 +187,5 @@ import static org.junit.jupiter.api.Assertions.*;
                     b.move("E2", "D3");
                 }
         );
-    }
-}*/
+    }*/
+}
