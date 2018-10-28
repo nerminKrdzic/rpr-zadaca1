@@ -2,7 +2,7 @@ package ba.unsa.etf.rpr;
 
 import java.util.ArrayList;
 
-public class Board implements Cloneable {
+public class Board {
     private ArrayList<ChessPiece> activeFigures = new ArrayList<>();
     ArrayList<ChessPiece> getActiveFgures() { return this.activeFigures; }
     public void setActiveFigures(ArrayList<ChessPiece> activeFigures) {
@@ -65,7 +65,6 @@ public class Board implements Cloneable {
         ChessPiece naOdredistu = checkDestination(index, position, color);
         if(figure instanceof Pawn && naOdredistu != null && !naOdredistu.getColor().equals(figure.getColor())){
             checkPawnDiagonal(oldPosition, position, color);
-            return;
         }
         if(naOdredistu == null) return;
         activeFigures.remove(naOdredistu);
@@ -86,8 +85,8 @@ public class Board implements Cloneable {
         if(figure instanceof Bishop) checkBishopPath(oldPosition, newPosition);
         if(figure instanceof Pawn) checkPawnPath(oldPosition, newPosition, figure.getColor());
         if(figure instanceof Queen){
-            if(oldPosition.charAt(0) - newPosition.charAt(0) == 0
-                    || oldPosition.charAt(1) - newPosition.charAt(1) == 0)
+            if(oldPosition.charAt(0) == newPosition.charAt(0)
+                    || oldPosition.charAt(1) == newPosition.charAt(1))
                 checkRookPath(oldPosition, newPosition);
             else checkBishopPath(oldPosition, newPosition);
         }
@@ -162,7 +161,6 @@ public class Board implements Cloneable {
                 for(ChessPiece c : activeFigures)
                     if(c.getPosition().equals(Character.toString(poc) + oldPosition.substring(1,2)))
                         throw new IllegalChessMoveException();
-
         }
     }
     private void checkBishopPath(String oldPosition, String newPosition) throws IllegalChessMoveException {
@@ -218,14 +216,14 @@ public class Board implements Cloneable {
                 character++;
             }
             for(ChessPiece c : activeFigures)
-                if(c.getPosition().equals(Character.toString(character) + oldPosition.substring(0,1)))
+                if(c.getPosition().equals(oldPosition.substring(0,1) + Character.toString(character)))
                     throw new IllegalChessMoveException();
         }
     }
     private void checkPawnDiagonal(String oldPosition, String newPosition, ChessPiece.Color color)throws IllegalChessMoveException{
-        if(color.equals(ChessPiece.Color.WHITE) && (Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) != 1
-            || newPosition.charAt(1) - oldPosition.charAt(1) != 1)) throw new IllegalChessMoveException();
-        else if(color.equals(ChessPiece.Color.BLACK) && (Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) != 1
-                || oldPosition.charAt(1) - newPosition.charAt(1) != 1)) throw new IllegalChessMoveException();
+        if(color.equals(ChessPiece.Color.WHITE) && !(Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) == 1
+            && newPosition.charAt(1) - oldPosition.charAt(1) == 1)) throw new IllegalChessMoveException();
+        else if(color.equals(ChessPiece.Color.BLACK) && !(Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) == 1
+                && oldPosition.charAt(1) - newPosition.charAt(1) == 1)) throw new IllegalChessMoveException();
     }
 }

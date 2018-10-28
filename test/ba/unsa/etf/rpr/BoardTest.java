@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BoardTest {
 
-    /*@Test
+    @Test
     // Is the board usable after isCheck
     void someLegalMoves() {
         Board b = new Board();
@@ -187,5 +187,78 @@ class BoardTest {
                     b.move("E2", "D3");
                 }
         );
-    }*/
+    }
+
+    @Test
+    //getting that line coverage
+    void gettingLineCoverage1(){
+        Board board = new Board();
+        assertDoesNotThrow(
+                () -> {
+                    board.move(Pawn.class, ChessPiece.Color.WHITE, "E4");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "E2");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "E3");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "H3");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "H7");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "G7");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "G4");
+                }
+        );
+    }
+    @Test
+    void gettingLineCoverage2(){
+        Board board = new Board();
+        assertThrows(IllegalChessMoveException.class,
+                () -> {
+                    board.move(Pawn.class, ChessPiece.Color.WHITE, "E4");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "E2");
+                    board.move(Queen.class, ChessPiece.Color.WHITE, "E4");
+                }
+        );
+    }
+    @Test
+    void gettingLineCoverage3(){
+        Board board = new Board();
+        assertThrows(IllegalChessMoveException.class,
+                () -> {
+                    board.move("E2", "E4");
+                    board.move("D1", "G4");
+                    board.move("G4", "A4");
+                }
+        );
+    }
+    @Test
+    void gettingLineCoverage4(){
+        Board board = new Board();
+        assertThrows(IllegalChessMoveException.class,
+                () -> {
+                    board.move("A7", "A6");
+                    board.move("C7", "C5");
+                    board.move("D8", "A5");
+                    board.move("A6", "A4");
+                }
+        );
+    }
+    @Test
+    void gettingLineCoverage5(){
+        Board board = new Board();
+        assertThrows(IllegalChessMoveException.class, () -> {
+            board.move("A7", "A5");
+            board.move("A5", "A4");
+            board.move("A4", "A3");
+            board.move("A3", "A2");
+        });
+
+    }
+    @Test
+    void gettingLineCoverage6(){
+        Board board = new Board();
+        assertThrows(IllegalChessMoveException.class, () -> {
+            board.move(Pawn.class, ChessPiece.Color.BLACK, "A5");
+            board.move(Pawn.class, ChessPiece.Color.BLACK, "A4");
+            board.move(Pawn.class, ChessPiece.Color.BLACK, "A3");
+            board.move(Pawn.class, ChessPiece.Color.BLACK, "A2");
+        });
+
+    }
 }
