@@ -2,8 +2,12 @@ package ba.unsa.etf.rpr;
 
 import java.util.ArrayList;
 
-public class Board {
+public class Board implements Cloneable {
     private ArrayList<ChessPiece> activeFigures = new ArrayList<>();
+    ArrayList<ChessPiece> getActiveFgures() { return this.activeFigures; }
+    public void setActiveFigures(ArrayList<ChessPiece> activeFigures) {
+        this.activeFigures = activeFigures;
+    }
     public Board(){
         //dodavanje pijuna
         for(char i = 'A'; i <= 'H'; i++)
@@ -33,9 +37,11 @@ public class Board {
 
     public void move(Class type, ChessPiece.Color color, String position) throws IllegalChessMoveException{
         Integer index = -1;
+        String oldPosition = null;
         for(int i = 0; i < activeFigures.size(); i++){
             if(activeFigures.get(i).getClass() == type && activeFigures.get(i).getColor().equals(color)){
                 try {
+                    oldPosition = activeFigures.get(i).getPosition();
                     activeFigures.get(i).move(position);
                 }catch (IllegalChessMoveException e){
                     if(i == activeFigures.size() - 1) throw new IllegalChessMoveException();
@@ -45,23 +51,72 @@ public class Board {
                 break;
             }
         }
+        ChessPiece figure = activeFigures.get(index);
         //kraljica, lovac, top i pijuni
-        if(activeFigures.get(index) instanceof Rook) checkRookPath(activeFigures.get(index).getPosition(), position);
-        if(activeFigures.get(index) instanceof Bishop) checkBishopPath(activeFigures.get(index).getPosition(), position);
-        if(activeFigures.get(index) instanceof Pawn) checkPawnPath(activeFigures.get(index).getPosition(), position, color);
-        if(activeFigures.get(index) instanceof Queen){
-            if(activeFigures.get(index).getPosition().charAt(0) - position.charAt(0) == 0
-                || activeFigures.get(index).getPosition().charAt(1) - position.charAt(1) == 0)
-                checkRookPath(activeFigures.get(index).getPosition(), position);
-            else checkBishopPath(activeFigures.get(index).getPosition(), position);
+        if(figure instanceof Rook) checkRookPath(oldPosition, position);
+        if(figure instanceof Bishop) checkBishopPath(oldPosition, position);
+        if(figure instanceof Pawn) checkPawnPath(oldPosition, position, color);
+        if(figure instanceof Queen){
+            if(oldPosition.charAt(0) - position.charAt(0) == 0
+                    || oldPosition.charAt(1) - position.charAt(1) == 0)
+                checkRookPath(oldPosition, position);
+            else checkBishopPath(oldPosition, position);
         }
         ChessPiece naOdredistu = checkDestination(index, position, color);
-        if(activeFigures.get(index) instanceof Pawn && naOdredistu != null &&!naOdredistu.getColor().equals(activeFigures.get(index).getColor())){
-            checkPawnDiagonal(activeFigures.get(index).getPosition(), position, color);
+        if(figure instanceof Pawn && naOdredistu != null && !naOdredistu.getColor().equals(figure.getColor())){
+            checkPawnDiagonal(oldPosition, position, color);
             return;
         }
         if(naOdredistu == null) return;
         activeFigures.remove(naOdredistu);
+    }
+    public void move(String oldPosition, String newPosition) throws IllegalArgumentException, IllegalChessMoveException{
+        ChessPiece figure = null;
+        for(ChessPiece c: activeFigures){
+            if(c.getPosition().equalsIgnoreCase(oldPosition)){
+                figure = c;
+                break;
+            }
+        }
+        if(figure == null) throw new IllegalArgumentException();
+        figure.move(newPosition);
+
+        //kraljica, lovac, top i pijuni
+        if(figure instanceof Rook) checkRookPath(oldPosition, newPosition);
+        if(figure instanceof Bishop) checkBishopPath(oldPosition, newPosition);
+        if(figure instanceof Pawn) checkPawnPath(oldPosition, newPosition, figure.getColor());
+        if(figure instanceof Queen){
+            if(oldPosition.charAt(0) - newPosition.charAt(0) == 0
+                    || oldPosition.charAt(1) - newPosition.charAt(1) == 0)
+                checkRookPath(oldPosition, newPosition);
+            else checkBishopPath(oldPosition, newPosition);
+        }
+        ChessPiece naOdredistu = checkDestination(activeFigures.indexOf(figure), newPosition, figure.getColor());
+        // treba se provijeriti koso kretanje kod pijuna
+        if(figure instanceof Pawn && naOdredistu != null && !naOdredistu.getColor().equals(figure.getColor()))
+            checkPawnDiagonal(oldPosition, newPosition, figure.getColor());
+        if(naOdredistu == null) return;
+        activeFigures.remove(naOdredistu);
+    }
+    public boolean isCheck(ChessPiece.Color color){
+        String enemyKingPosition = null;
+        // nadjemo oziciju neprijateljkog kralja
+        for(ChessPiece c : activeFigures)
+            if(c.getClass() == King.class && !c.getClass().equals(color))
+                enemyKingPosition = c.getPosition();
+            //onda provjeravamo da li i jedna figura moze ici na njegovu poziciju
+        for(int i = 0; i < activeFigures.size(); i++){
+            try{
+                Board board = new Board();
+                board.setActiveFigures((ArrayList<ChessPiece>)this.activeFigures.clone());
+                if(board.getActiveFgures().get(i).getColor().equals(color)) board.move(board.getActiveFgures().get(i).getPosition(), enemyKingPosition);
+                else continue;
+            }catch(IllegalChessMoveException e){
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 
     private ChessPiece checkDestination(Integer index, String position, ChessPiece.Color color) throws IllegalChessMoveException{
@@ -79,7 +134,7 @@ public class Board {
         return null;
     }
     private void checkRookPath(String oldPosition, String newPosition) throws IllegalChessMoveException {
-        if(oldPosition.charAt(0) - newPosition.charAt(0) == 0){ //krecemo se po y osi
+        if(oldPosition.charAt(0) == newPosition.charAt(0)){ //krecemo se po y osi
             char poc, kraj;
             if(oldPosition.charAt(1) > newPosition.charAt(1)){
                 poc =  newPosition.charAt(1); poc++;
@@ -93,7 +148,7 @@ public class Board {
                 for(ChessPiece c : activeFigures)
                     if(c.getPosition().equals(oldPosition.substring(0,1) + Character.toString(poc)))
                         throw new IllegalChessMoveException();
-        }{  // krecemo se po x osi
+        }else {  // krecemo se po x osi
             char poc, kraj;
             if(oldPosition.charAt(0) > newPosition.charAt(0)){
                 poc =  newPosition.charAt(0); poc++;
@@ -111,34 +166,44 @@ public class Board {
         }
     }
     private void checkBishopPath(String oldPosition, String newPosition) throws IllegalChessMoveException {
-        char poc1, poc2, kraj1, kraj2;
-
-        if(oldPosition.charAt(0) - newPosition.charAt(0) > 0){ //  prema dole
-            poc1 = newPosition.charAt(0);
-            poc1++;
-            kraj1 = oldPosition.charAt(0);
-        }
-        else{
-            poc1 = oldPosition.charAt(0);  // prema gore
-            poc1++;
-            kraj1 = newPosition.charAt(0);
-        }
-        if(oldPosition.charAt(1) - newPosition.charAt(1) > 0){  // prema lijevo
-            poc2 = newPosition.charAt(1);
-            poc2++;
-            kraj2 = oldPosition.charAt(1);
-        }
-        else{
-            poc2 = oldPosition.charAt(1);  //  prema desno
-            poc2++;
-            kraj2 =  newPosition.charAt(1);
-        }
-        for(; poc1 < kraj1; poc1++){
-            for(ChessPiece c : activeFigures){
-                if(c.getPosition().equals(Character.toString(poc1) + Character.toString(poc2)))
-                    throw new IllegalChessMoveException();
-                poc2++;
+        char poc1, poc2, kraj1;
+        if(oldPosition.charAt(0) < newPosition.charAt(0) && oldPosition.charAt(1) < newPosition.charAt(1)
+            || oldPosition.charAt(0) > newPosition.charAt(0) && oldPosition.charAt(1) > newPosition.charAt(1)){
+            // kredanje x>0 i y>0
+            if(oldPosition.charAt(0) < newPosition.charAt(0) && oldPosition.charAt(1) < newPosition.charAt(1)){
+                poc1 = oldPosition.charAt(0); poc1++;
+                poc2 = oldPosition.charAt(1); poc2++;
+                kraj1 = newPosition.charAt(0);
             }
+            // kretanje x<0 i y<0
+            else{
+                poc1 = newPosition.charAt(0); poc1++;
+                poc2 = newPosition.charAt(1); poc2++;
+                kraj1 = oldPosition.charAt(0);
+            }
+            for (; poc1 < kraj1; poc1++, poc2++)
+                for(ChessPiece c: activeFigures)
+                    if(c.getPosition().equals(Character.toString(poc1) + Character.toString(poc2)))
+                        throw new IllegalChessMoveException();
+        }
+        else {
+            //kretanje x>0 i y<0
+            if(oldPosition.charAt(0) < newPosition.charAt(0)
+                    && oldPosition.charAt(1) > newPosition.charAt(1)){
+                poc1 = oldPosition.charAt(0); poc1++;
+                poc2 = oldPosition.charAt(1); poc2--;
+                kraj1 = newPosition.charAt(0);
+            }
+            //kreatanje x<0 i y>0
+            else {
+                poc1 = newPosition.charAt(0); poc1++;
+                poc2 = newPosition.charAt(1); poc2--;
+                kraj1 = oldPosition.charAt(0);
+            }
+            for (; poc1 < kraj1; poc1++, poc2--)
+                for(ChessPiece c: activeFigures)
+                    if(c.getPosition().equals(Character.toString(poc1) + Character.toString(poc2)))
+                        throw new IllegalChessMoveException();
         }
     }
     private void checkPawnPath(String oldPosition, String newPosition, ChessPiece.Color color) throws IllegalChessMoveException {
@@ -158,9 +223,9 @@ public class Board {
         }
     }
     private void checkPawnDiagonal(String oldPosition, String newPosition, ChessPiece.Color color)throws IllegalChessMoveException{
-        if(color.equals(ChessPiece.Color.WHITE) && !(Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) == 1
-            && newPosition.charAt(1) - oldPosition.charAt(1) == 1)) throw new IllegalChessMoveException();
-        else if(!(Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) == 1
-                && oldPosition.charAt(1) - newPosition.charAt(1) == 1)) throw new IllegalChessMoveException();
+        if(color.equals(ChessPiece.Color.WHITE) && (Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) != 1
+            || newPosition.charAt(1) - oldPosition.charAt(1) != 1)) throw new IllegalChessMoveException();
+        else if(color.equals(ChessPiece.Color.BLACK) && (Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) != 1
+                || oldPosition.charAt(1) - newPosition.charAt(1) != 1)) throw new IllegalChessMoveException();
     }
 }
