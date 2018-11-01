@@ -51,7 +51,7 @@ class BoardTest {
         } catch(Exception e) {
             // Do nothing
         }
-        assertTrue(b.isCheck(ChessPiece.Color.BLACK));
+        assertFalse(b.isCheck(ChessPiece.Color.BLACK));
     }
 
     @Test
@@ -144,7 +144,7 @@ class BoardTest {
         } catch(Exception e) {
             // Do nothing
         }
-        assertTrue(b.isCheck(ChessPiece.Color.BLACK));
+        assertFalse(b.isCheck(ChessPiece.Color.BLACK));
     }
 
     @Test
@@ -191,6 +191,7 @@ class BoardTest {
 
     @Test
     //getting that line coverage
+    // koso, horizontalno, vertikalno pomijeranje
     void gettingLineCoverage1(){
         Board board = new Board();
         assertDoesNotThrow(
@@ -205,6 +206,7 @@ class BoardTest {
                 }
         );
     }
+    // zabranjeno pomijeranje na svoju figuru
     @Test
     void gettingLineCoverage2(){
         Board board = new Board();
@@ -216,6 +218,7 @@ class BoardTest {
                 }
         );
     }
+    // zabranjeno pomijeranje preko figure
     @Test
     void gettingLineCoverage3(){
         Board board = new Board();
@@ -227,6 +230,7 @@ class BoardTest {
                 }
         );
     }
+    // zabranjeno dvostruko pomijeranje pijuna osim iz pocetne pozicije
     @Test
     void gettingLineCoverage4(){
         Board board = new Board();
@@ -239,6 +243,7 @@ class BoardTest {
                 }
         );
     }
+    // pijun ne moze jesti pravo , samo u koso
     @Test
     void gettingLineCoverage5(){
         Board board = new Board();
@@ -250,15 +255,86 @@ class BoardTest {
         });
 
     }
+    // piijun moze dva polja samo kad krece iz pocetne pozicije
     @Test
-    void gettingLineCoverage6(){
+    void test1(){
         Board board = new Board();
         assertThrows(IllegalChessMoveException.class, () -> {
-            board.move(Pawn.class, ChessPiece.Color.BLACK, "A5");
-            board.move(Pawn.class, ChessPiece.Color.BLACK, "A4");
-            board.move(Pawn.class, ChessPiece.Color.BLACK, "A3");
-            board.move(Pawn.class, ChessPiece.Color.BLACK, "A2");
+            board.move("A7", "A5");
+            board.move("A5", "A3");
         });
+    }
+    @Test
+    // sah za crne
+    void test3(){
+        Board b = new Board();
+        try {
+            b.move("E2", "E4");
+            b.move("E4", "E5");
+            b.move("E5", "E6");
+            b.move("E6", "D7");
 
+        } catch(Exception e) {
+            // Do nothing
+        }
+        assertTrue(b.isCheck(ChessPiece.Color.BLACK));
+    }
+    @Test
+        // sah za bijele
+    void test4(){
+        Board b = new Board();
+        try {
+            b.move("E7", "E5");
+            b.move("E5", "E4");
+            b.move("E4", "E3");
+            b.move("E3", "D2");
+
+        } catch(Exception e) {
+            // Do nothing
+        }
+        assertTrue(b.isCheck(ChessPiece.Color.WHITE));
+    }
+
+    // preskakanje s pijunima !
+    @Test
+    void test5(){
+        Board b = new Board();
+        assertThrows(IllegalChessMoveException.class,
+                () -> {
+                    b.move(Pawn.class, ChessPiece.Color.BLACK, "A5");
+                    b.move(Pawn.class, ChessPiece.Color.BLACK, "A4");
+                    b.move(Pawn.class, ChessPiece.Color.BLACK, "A3");
+                    b.move(Pawn.class, ChessPiece.Color.WHITE, "A4");
+                });
+    }
+    // kralj ne smije stati na poziciju na kojoj ga moze neprijatelj pojesti
+    @Test
+    void test6(){
+        Board b = new Board();
+        assertThrows(IllegalChessMoveException.class,
+                () -> {
+                    b.move("E2", "E4");
+                    b.move("E4", "E5");
+                    b.move("E5", "E6");
+                    b.move("E6", "D7");
+                    b.move("D1", "E2");
+                    b.move("E2", "E3");
+                    b.move("E3", "D3");
+                    b.move("E8", "D7");
+                });
+    }
+    // legalna pomijeranja pijuna
+    @Test
+    void test7(){
+        Board b= new Board();
+        assertDoesNotThrow(() -> {
+            b.move("A2", "A4");
+            b.move("B2", "B4");
+            b.move("G2", "G4");
+            b.move(Pawn.class, ChessPiece.Color.BLACK, "G5");
+            b.move(Pawn.class, ChessPiece.Color.BLACK, "C5");
+            b.move(Pawn.class, ChessPiece.Color.BLACK, "H5");
+
+        });
     }
 }

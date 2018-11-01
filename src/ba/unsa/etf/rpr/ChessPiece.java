@@ -1,6 +1,6 @@
 package ba.unsa.etf.rpr;
 
-public abstract class ChessPiece {
+public abstract class ChessPiece implements Cloneable{
     protected Color color = null;
     protected String position = null;
     //methods realized in child classes
@@ -14,5 +14,9 @@ public abstract class ChessPiece {
     }
     public static enum Color {
         BLACK, WHITE
+    }
+    @Override
+    public Object clone() throws CloneNotSupportedException{
+        return super.clone();
     }
 }

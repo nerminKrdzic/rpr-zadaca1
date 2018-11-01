@@ -1,6 +1,6 @@
 package ba.unsa.etf.rpr;
 
-public class Pawn extends ChessPiece{
+public class Pawn extends ChessPiece {
 
     public Pawn(String position, Color color){
         super(position, color);
@@ -30,7 +30,6 @@ public class Pawn extends ChessPiece{
             return true;
         else return false;
     }
-
     @Override
     public void move(String position) throws IllegalArgumentException, IllegalChessMoveException {
         if(!CheckPositionFormat.checkPositionFormat(position)) throw new IllegalArgumentException("");

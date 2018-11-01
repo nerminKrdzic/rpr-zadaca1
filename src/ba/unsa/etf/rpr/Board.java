@@ -5,9 +5,6 @@ import java.util.ArrayList;
 public class Board {
     private ArrayList<ChessPiece> activeFigures = new ArrayList<>();
     ArrayList<ChessPiece> getActiveFgures() { return this.activeFigures; }
-    public void setActiveFigures(ArrayList<ChessPiece> activeFigures) {
-        this.activeFigures = activeFigures;
-    }
     public Board(){
         //dodavanje pijuna
         for(char i = 'A'; i <= 'H'; i++)
@@ -52,22 +49,7 @@ public class Board {
             }
         }
         ChessPiece figure = activeFigures.get(index);
-        //kraljica, lovac, top i pijuni
-        if(figure instanceof Rook) checkRookPath(oldPosition, position);
-        if(figure instanceof Bishop) checkBishopPath(oldPosition, position);
-        if(figure instanceof Pawn) checkPawnPath(oldPosition, position, color);
-        if(figure instanceof Queen){
-            if(oldPosition.charAt(0) - position.charAt(0) == 0
-                    || oldPosition.charAt(1) - position.charAt(1) == 0)
-                checkRookPath(oldPosition, position);
-            else checkBishopPath(oldPosition, position);
-        }
-        ChessPiece naOdredistu = checkDestination(index, position, color);
-        if(figure instanceof Pawn && naOdredistu != null && !naOdredistu.getColor().equals(figure.getColor())){
-            checkPawnDiagonal(oldPosition, position, color);
-        }
-        if(naOdredistu == null) return;
-        activeFigures.remove(naOdredistu);
+        validateFigureMovement(figure, oldPosition, position);
     }
     public void move(String oldPosition, String newPosition) throws IllegalArgumentException, IllegalChessMoveException{
         ChessPiece figure = null;
@@ -79,6 +61,50 @@ public class Board {
         }
         if(figure == null) throw new IllegalArgumentException();
         figure.move(newPosition);
+        validateFigureMovement(figure, oldPosition, newPosition);
+    }
+    public boolean isCheck(ChessPiece.Color color){
+        String enemyKingPosition = null;
+        // nadjemo poziciju neprijateljkog kralja
+        for(ChessPiece c : activeFigures)
+            if(c instanceof King && c.getColor().equals(color)){
+                enemyKingPosition = c.getPosition();
+                break;
+            }
+            //onda provjeravamo da li i jedna figura moze ici na njegovu poziciju
+        for(int i = 0; i < activeFigures.size(); i++){
+            try{
+                Board board = new Board();
+                klonirajFigure(board);
+                if(!board.getActiveFgures().get(i).getColor().equals(color)) board.move(board.getActiveFgures().get(i).getPosition(), enemyKingPosition);
+                else continue;
+            }catch(IllegalChessMoveException e){
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void klonirajFigure(Board board){
+        board.activeFigures = new ArrayList<>();
+        for(int i = 0; i < activeFigures.size(); i++){
+            try {
+                board.activeFigures.add((ChessPiece) activeFigures.get(i).clone());
+            } catch (CloneNotSupportedException e) {// ovdje fali line coverage
+                throw new InternalError();
+            }
+        }
+    }
+
+    // nakon pomijeranja figure provjeri da li se figura mogla pomijeriti na to mijesto!
+    private void validateFigureMovement(ChessPiece figure, String oldPosition, String newPosition) throws IllegalChessMoveException{
+        ChessPiece naOdredistu = checkDestination(activeFigures.indexOf(figure), newPosition, figure.getColor());
+        if(naOdredistu != null) activeFigures.remove(naOdredistu);
+        if(figure instanceof King &&  // king se ne smije pomijeriti na poziciju na kojoj ga moze pojesti neprijateljska figura
+                (figure.getColor().equals(ChessPiece.Color.WHITE) && isCheck(ChessPiece.Color.WHITE)
+                        || figure.getColor().equals(ChessPiece.Color.BLACK) && isCheck(ChessPiece.Color.BLACK)))
+            throw new IllegalChessMoveException();
 
         //kraljica, lovac, top i pijuni
         if(figure instanceof Rook) checkRookPath(oldPosition, newPosition);
@@ -90,34 +116,18 @@ public class Board {
                 checkRookPath(oldPosition, newPosition);
             else checkBishopPath(oldPosition, newPosition);
         }
-        ChessPiece naOdredistu = checkDestination(activeFigures.indexOf(figure), newPosition, figure.getColor());
         // treba se provijeriti koso kretanje kod pijuna
         if(figure instanceof Pawn && naOdredistu != null && !naOdredistu.getColor().equals(figure.getColor()))
             checkPawnDiagonal(oldPosition, newPosition, figure.getColor());
-        if(naOdredistu == null) return;
-        activeFigures.remove(naOdredistu);
     }
-    public boolean isCheck(ChessPiece.Color color){
-        String enemyKingPosition = null;
-        // nadjemo oziciju neprijateljkog kralja
-        for(ChessPiece c : activeFigures)
-            if(c.getClass() == King.class && !c.getClass().equals(color))
-                enemyKingPosition = c.getPosition();
-            //onda provjeravamo da li i jedna figura moze ici na njegovu poziciju
-        for(int i = 0; i < activeFigures.size(); i++){
-            try{
-                Board board = new Board();
-                board.setActiveFigures((ArrayList<ChessPiece>)this.activeFigures.clone());
-                if(board.getActiveFgures().get(i).getColor().equals(color)) board.move(board.getActiveFgures().get(i).getPosition(), enemyKingPosition);
-                else continue;
-            }catch(IllegalChessMoveException e){
-                continue;
-            }
-            return true;
-        }
-        return false;
-    }
+    // metoda za provjeru validnosti pomijeranja pijuna za dva polja
+    private void checkIfPawnDoubleMoveIsLegal(String oldPosition, ChessPiece.Color color) throws IllegalChessMoveException{
+        if(color.equals(ChessPiece.Color.WHITE) && oldPosition.charAt(1) != '2'
+            || color.equals(ChessPiece.Color.BLACK) && oldPosition.charAt(1) != '7')
+            throw new IllegalChessMoveException();
 
+    }
+    //metoda za provjeru odredista
     private ChessPiece checkDestination(Integer index, String position, ChessPiece.Color color) throws IllegalChessMoveException{
         for(int i = 0; i < activeFigures.size(); i++){
             //ako vec ima figura na odredistu
@@ -132,6 +142,7 @@ public class Board {
         //ako nema nista na odreistu onda je OK
         return null;
     }
+    // metoda za provjeru putanje topa
     private void checkRookPath(String oldPosition, String newPosition) throws IllegalChessMoveException {
         if(oldPosition.charAt(0) == newPosition.charAt(0)){ //krecemo se po y osi
             char poc, kraj;
@@ -163,6 +174,7 @@ public class Board {
                         throw new IllegalChessMoveException();
         }
     }
+    //metoda za provjeru putanje lovca
     private void checkBishopPath(String oldPosition, String newPosition) throws IllegalChessMoveException {
         char poc1, poc2, kraj1;
         if(oldPosition.charAt(0) < newPosition.charAt(0) && oldPosition.charAt(1) < newPosition.charAt(1)
@@ -204,8 +216,10 @@ public class Board {
                         throw new IllegalChessMoveException();
         }
     }
+    // metoda za provjeru putanja pijuna kod dvostrukog pomijeranja
     private void checkPawnPath(String oldPosition, String newPosition, ChessPiece.Color color) throws IllegalChessMoveException {
         if(Math.abs(newPosition.charAt(1) - oldPosition.charAt(1)) == 2){
+            checkIfPawnDoubleMoveIsLegal(oldPosition, color); // provjera legalnosti double move pijuna
             char character;
             if(color == ChessPiece.Color.WHITE){
                 character = oldPosition.charAt(1);
@@ -220,6 +234,7 @@ public class Board {
                     throw new IllegalChessMoveException();
         }
     }
+    // metoda za provjeru validnosti kosog pomijeranja pijuna
     private void checkPawnDiagonal(String oldPosition, String newPosition, ChessPiece.Color color)throws IllegalChessMoveException{
         if(color.equals(ChessPiece.Color.WHITE) && !(Math.abs(oldPosition.charAt(0) - newPosition.charAt(0)) == 1
             && newPosition.charAt(1) - oldPosition.charAt(1) == 1)) throw new IllegalChessMoveException();
