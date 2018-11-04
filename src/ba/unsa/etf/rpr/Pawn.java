@@ -33,6 +33,7 @@ public class Pawn extends ChessPiece {
     @Override
     public void move(String position) throws IllegalArgumentException, IllegalChessMoveException {
         if(!CheckPositionFormat.checkPositionFormat(position)) throw new IllegalArgumentException("");
+        position = position.substring(0,1).toUpperCase() + position.substring(1,2);
         switch (color){
             case WHITE:
                 if(whitePawnMove(position)) {

@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 public class Board {
     private ArrayList<ChessPiece> activeFigures = new ArrayList<>();
-    ArrayList<ChessPiece> getActiveFgures() { return this.activeFigures; }
+    public ArrayList<ChessPiece> getActiveFgures() { return this.activeFigures; }
+    public void setActiveFigures(ArrayList<ChessPiece> activeFigures) { this.activeFigures = activeFigures; }
     public Board(){
         //dodavanje pijuna
         for(char i = 'A'; i <= 'H'; i++)
@@ -33,6 +34,7 @@ public class Board {
     }
 
     public void move(Class type, ChessPiece.Color color, String position) throws IllegalChessMoveException{
+        position = position.substring(0,1).toUpperCase() + position.substring(1,2);
         Integer index = -1;
         String oldPosition = null;
         for(int i = 0; i < activeFigures.size(); i++){
@@ -48,10 +50,15 @@ public class Board {
                 break;
             }
         }
+        if(index == -1) throw new IllegalChessMoveException();
         ChessPiece figure = activeFigures.get(index);
         validateFigureMovement(figure, oldPosition, position);
+        if(isCheck(color))
+            throw new IllegalChessMoveException();
     }
     public void move(String oldPosition, String newPosition) throws IllegalArgumentException, IllegalChessMoveException{
+        oldPosition = oldPosition.substring(0,1).toUpperCase() + oldPosition.substring(1,2);
+        newPosition = newPosition.substring(0,1).toUpperCase() + newPosition.substring(1,2);
         ChessPiece figure = null;
         for(ChessPiece c: activeFigures){
             if(c.getPosition().equalsIgnoreCase(oldPosition)){
@@ -62,7 +69,10 @@ public class Board {
         if(figure == null) throw new IllegalArgumentException();
         figure.move(newPosition);
         validateFigureMovement(figure, oldPosition, newPosition);
+        if(isCheck(figure.getColor()))
+            throw new IllegalChessMoveException();
     }
+
     public boolean isCheck(ChessPiece.Color color){
         String enemyKingPosition = null;
         // nadjemo poziciju neprijateljkog kralja
