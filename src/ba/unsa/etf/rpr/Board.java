@@ -40,8 +40,8 @@ public class Board {
         for(int i = 0; i < activeFigures.size(); i++){
             if(activeFigures.get(i).getClass() == type && activeFigures.get(i).getColor().equals(color)){
                 try {
-                    oldPosition = activeFigures.get(i).getPosition();
                     figure = activeFigures.get(i);
+                    oldPosition = figure.getPosition();
                     figure.move(position);
                     validateFigureMovement(figure, oldPosition, position);
                     if(isCheck(color)){
