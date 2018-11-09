@@ -45,11 +45,11 @@ public class Board {
                     figure.move(position);
                     validateFigureMovement(figure, oldPosition, position);
                     if(isCheck(color)){
-                        figure.setPosition(oldPosition);
                         throw new IllegalChessMoveException();
                     }
                     return;
                 }catch (IllegalChessMoveException e){
+                    figure.setPosition(oldPosition);
                     if(i == activeFigures.size() - 1) throw new IllegalChessMoveException();
                     continue;
                 }
