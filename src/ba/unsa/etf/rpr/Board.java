@@ -35,26 +35,26 @@ public class Board {
 
     public void move(Class type, ChessPiece.Color color, String position) throws IllegalChessMoveException{
         position = position.substring(0,1).toUpperCase() + position.substring(1,2);
-        Integer index = -1;
         String oldPosition = null;
+        ChessPiece figure = null;
         for(int i = 0; i < activeFigures.size(); i++){
             if(activeFigures.get(i).getClass() == type && activeFigures.get(i).getColor().equals(color)){
                 try {
                     oldPosition = activeFigures.get(i).getPosition();
-                    activeFigures.get(i).move(position);
+                    figure = activeFigures.get(i);
+                    figure.move(position);
+                    validateFigureMovement(figure, oldPosition, position);
+                    if(isCheck(color)){
+                        figure.setPosition(oldPosition);
+                        throw new IllegalChessMoveException();
+                    }
+                    return;
                 }catch (IllegalChessMoveException e){
                     if(i == activeFigures.size() - 1) throw new IllegalChessMoveException();
                     continue;
                 }
-                index = i;
-                break;
-            }
+            } else if(i == activeFigures.size() - 1) throw new IllegalChessMoveException();
         }
-        if(index == -1) throw new IllegalChessMoveException();
-        ChessPiece figure = activeFigures.get(index);
-        validateFigureMovement(figure, oldPosition, position);
-        if(isCheck(color))
-            throw new IllegalChessMoveException();
     }
     public void move(String oldPosition, String newPosition) throws IllegalArgumentException, IllegalChessMoveException{
         oldPosition = oldPosition.substring(0,1).toUpperCase() + oldPosition.substring(1,2);
@@ -85,7 +85,7 @@ public class Board {
         for(int i = 0; i < activeFigures.size(); i++){
             try{
                 Board board = new Board();
-                klonirajFigure(board);
+                cloneFigures(board);
                 if(!board.getActiveFgures().get(i).getColor().equals(color)) board.move(board.getActiveFgures().get(i).getPosition(), enemyKingPosition);
                 else continue;
             }catch(IllegalChessMoveException e){
@@ -96,7 +96,7 @@ public class Board {
         return false;
     }
 
-    private void klonirajFigure(Board board){
+    private void cloneFigures(Board board){
         board.activeFigures = new ArrayList<>();
         for(int i = 0; i < activeFigures.size(); i++){
             try {

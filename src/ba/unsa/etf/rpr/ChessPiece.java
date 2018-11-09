@@ -6,13 +6,15 @@ public abstract class ChessPiece implements Cloneable{
     //methods realized in child classes
     public String getPosition(){ return position; }
     public Color getColor(){ return color; }
+    public void setColor(Color color){ this.color = color; }
+    public void setPosition(String position) { this.position = position; }
     public abstract void move(String position) throws IllegalArgumentException, IllegalChessMoveException;
     public ChessPiece(String position, Color color) throws IllegalArgumentException{
         if(!CheckPositionFormat.checkPositionFormat(position)) throw new IllegalArgumentException();
         this.position = position.substring(0,1).toUpperCase() + position.substring(1,2);
         this.color = color;
     }
-    public static enum Color {
+    public enum Color {
         BLACK, WHITE
     }
     @Override
